@@ -7,6 +7,13 @@ CorpAI Local is a self-contained sandbox for trying CorpAI on your own machine. 
 - Docker Desktop, OrbStack, or another Docker-compatible runtime
 - An API key from Anthropic, OpenAI, or Google
 
+## Docs
+
+- [Installation](docs/installation.md)
+- [Configuration](docs/configuration.md)
+- [Smoke Test](docs/smoke-test.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
 ## Quick Start
 
 ### macOS / Linux
@@ -161,4 +168,3 @@ If you created a persistent volume and want to remove all local state:
 ```bash
 docker volume rm corpai-local-data
 ```
-
