@@ -180,7 +180,7 @@ The release image should be publicly pullable:
 docker pull ghcr.io/corpai/corpai-sandbox:latest
 ```
 
-If this returns `unauthorized`, the GitHub Container Registry package visibility may still be private. Ask the CorpAI team to confirm that the package is public.
+If this returns `unauthorized`, the release image is not publicly pullable yet. Ask the CorpAI team to confirm that the image is published from the public `corpai/corpai-sandbox` repository.
 
 ### Docker daemon is not running
 
