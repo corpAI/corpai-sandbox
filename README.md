@@ -1,18 +1,12 @@
-# CorpAI Local
+# CorpAI Sandbox
 
-CorpAI Local is a self-contained sandbox for trying CorpAI on your own machine. It lets you run the CorpAI web app locally, deploy catalog MCP servers into a local Kubernetes sandbox, and use those tools through chat with your own LLM API key.
+CorpAI Sandbox is a self-contained local environment for trying CorpAI on your own machine. It runs the CorpAI web app locally, deploys catalog MCP servers into a local Kubernetes sandbox, and lets users interact with those tools through chat using their own LLM API key.
 
 ## Requirements
 
 - Docker Desktop, OrbStack, or another Docker-compatible runtime
+- Network access to GitHub Container Registry
 - An API key from Anthropic, OpenAI, or Google
-
-## Docs
-
-- [Installation](docs/installation.md)
-- [Configuration](docs/configuration.md)
-- [Smoke Test](docs/smoke-test.md)
-- [Troubleshooting](docs/troubleshooting.md)
 
 ## Quick Start
 
@@ -24,7 +18,7 @@ docker run --rm \
   -p 8000:8000 \
   -e ANTHROPIC_API_KEY=your-key \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  ghcr.io/corpai/corpai-local-release:latest
+  ghcr.io/corpai/corpai-sandbox:latest
 ```
 
 ### OrbStack
@@ -37,7 +31,7 @@ docker run --rm \
   -p 8000:8000 \
   -e ANTHROPIC_API_KEY=your-key \
   -v "$HOME/.orbstack/run/docker.sock:/var/run/docker.sock" \
-  ghcr.io/corpai/corpai-local-release:latest
+  ghcr.io/corpai/corpai-sandbox:latest
 ```
 
 ### Windows PowerShell
@@ -48,7 +42,7 @@ docker run --rm `
   -p 8000:8000 `
   -e ANTHROPIC_API_KEY=your-key `
   -v //./pipe/docker_engine:/var/run/docker.sock `
-  ghcr.io/corpai/corpai-local-release:latest
+  ghcr.io/corpai/corpai-sandbox:latest
 ```
 
 ## LLM Providers
@@ -59,18 +53,24 @@ Anthropic is the default provider:
 -e ANTHROPIC_API_KEY=your-key
 ```
 
-For OpenAI:
+OpenAI:
 
 ```bash
 -e LLM_PROVIDER=openai \
 -e OPENAI_API_KEY=your-key
 ```
 
-For Google Gemini:
+Google Gemini:
 
 ```bash
 -e LLM_PROVIDER=google \
 -e GOOGLE_API_KEY=your-key
+```
+
+To use a specific model, add:
+
+```bash
+-e LLM_MODEL=your-model
 ```
 
 ## Persistent Local State
@@ -78,18 +78,30 @@ For Google Gemini:
 For a trial that survives container restarts, create a named Docker volume:
 
 ```bash
-docker volume create corpai-local-data
+docker volume create corpai-sandbox-data
 ```
 
 Then add it to the run command:
 
 ```bash
--v corpai-local-data:/var/lib/postgresql/data
+-v corpai-sandbox-data:/var/lib/postgresql/data
 ```
 
-This preserves local database state, generated security keys, settings, and deployment history.
+Example:
 
-## Open CorpAI Local
+```bash
+docker run --rm \
+  -p 3000:3000 \
+  -p 8000:8000 \
+  -e ANTHROPIC_API_KEY=your-key \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v corpai-sandbox-data:/var/lib/postgresql/data \
+  ghcr.io/corpai/corpai-sandbox:latest
+```
+
+This preserves local database state, generated security keys, settings, catalog state, and deployment history.
+
+## Open CorpAI Sandbox
 
 After the container starts, open:
 
@@ -120,13 +132,13 @@ The container starts:
 - A local Kind Kubernetes cluster named `corpai-local`
 - A Kubernetes namespace named `corpai-local`
 
-The Docker socket mount lets CorpAI Local create and manage the Kind cluster and MCP server workloads on your machine.
+The Docker socket mount lets CorpAI Sandbox create and manage the Kind cluster and MCP server workloads on your machine.
 
 ## Smoke Test
 
-To verify the local sandbox:
+Use this checklist to confirm CorpAI Sandbox is running correctly.
 
-1. Open CorpAI Local in your browser.
+1. Open `http://127.0.0.1:3000`.
 2. Log in with the default credentials.
 3. Go to MCP Servers.
 4. Deploy the `time` MCP server.
@@ -137,11 +149,10 @@ To verify the local sandbox:
 What time is it in Tokyo?
 ```
 
-You should see a response that includes a visible tool call similar to:
+Expected result:
 
-```text
-time / get_current_time
-```
+- the assistant answers the question
+- the response shows a visible tool call similar to `time / get_current_time`
 
 ## Useful Checks
 
@@ -157,14 +168,132 @@ Check running containers:
 docker ps
 ```
 
-You should see the CorpAI Local container and a Kind control-plane container.
+You should see the CorpAI Sandbox container and a Kind control-plane container.
+
+## Troubleshooting
+
+### `docker pull` returns `unauthorized`
+
+The release image should be publicly pullable:
+
+```bash
+docker pull ghcr.io/corpai/corpai-sandbox:latest
+```
+
+If this returns `unauthorized`, the GitHub Container Registry package visibility may still be private. Ask the CorpAI team to confirm that the package is public.
+
+### Docker daemon is not running
+
+Start Docker Desktop or OrbStack, then retry:
+
+```bash
+docker ps
+```
+
+If `docker ps` fails, CorpAI Sandbox will not be able to start or deploy MCP servers.
+
+### Docker socket not found
+
+Docker Desktop on macOS/Linux usually uses:
+
+```bash
+-v /var/run/docker.sock:/var/run/docker.sock
+```
+
+OrbStack commonly uses:
+
+```bash
+-v "$HOME/.orbstack/run/docker.sock:/var/run/docker.sock"
+```
+
+### Browser cannot reach the app
+
+Use:
+
+```text
+http://127.0.0.1:3000
+```
+
+If port `3000` is already in use, map another host port:
+
+```bash
+-p 3001:3000
+```
+
+Then open:
+
+```text
+http://127.0.0.1:3001
+```
+
+### API is not responding
+
+Check:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+If port `8000` is already in use, map another host port:
+
+```bash
+-p 8001:8000
+```
+
+Then check:
+
+```bash
+curl http://127.0.0.1:8001/health
+```
+
+### Kind cluster issues
+
+CorpAI Sandbox creates a Kind cluster named `corpai-local`.
+
+Check running containers:
+
+```bash
+docker ps
+```
+
+Look for a container named like:
+
+```text
+corpai-local-control-plane
+```
+
+If it is missing, confirm Docker is running and the Docker socket is mounted into the CorpAI Sandbox container.
+
+### LLM responses fail
+
+Confirm that the right provider variables are set.
+
+Anthropic:
+
+```bash
+-e ANTHROPIC_API_KEY=your-key
+```
+
+OpenAI:
+
+```bash
+-e LLM_PROVIDER=openai \
+-e OPENAI_API_KEY=your-key
+```
+
+Google Gemini:
+
+```bash
+-e LLM_PROVIDER=google \
+-e GOOGLE_API_KEY=your-key
+```
 
 ## Cleanup
 
-Stop the CorpAI Local container with `Ctrl+C` if running in the foreground.
+Stop the CorpAI Sandbox container with `Ctrl+C` if it is running in the foreground.
 
 If you created a persistent volume and want to remove all local state:
 
 ```bash
-docker volume rm corpai-local-data
+docker volume rm corpai-sandbox-data
 ```
