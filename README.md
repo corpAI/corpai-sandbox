@@ -5,12 +5,23 @@ CorpAI Sandbox is a self-contained local environment for trying CorpAI on your o
 ## Requirements
 
 - Docker Desktop, OrbStack, or another Docker-compatible runtime
-- Network access to GitHub Container Registry
+- Network access to Amazon ECR Public
 - An API key from Anthropic, OpenAI, or Google
 
 ## Quick Start
 
-### macOS / Linux
+Download and run the installer:
+
+```bash
+curl -L https://raw.githubusercontent.com/corpAI/corpai-sandbox/main/corpai-sandbox.sh -o corpai-sandbox.sh
+chmod +x corpai-sandbox.sh
+export ANTHROPIC_API_KEY=your-key
+./corpai-sandbox.sh
+```
+
+The installer pulls the CorpAI Sandbox image and starts the local container with Docker socket access.
+
+### Manual Docker Run: macOS / Linux
 
 ```bash
 docker run --rm \
@@ -18,10 +29,10 @@ docker run --rm \
   -p 8000:8000 \
   -e ANTHROPIC_API_KEY=your-key \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  ghcr.io/corpai/corpai-sandbox:latest
+  public.ecr.aws/n8n3b8o3/corpai-sandbox:latest
 ```
 
-### OrbStack
+### Manual Docker Run: OrbStack
 
 If your Docker socket is managed by OrbStack, use:
 
@@ -31,10 +42,10 @@ docker run --rm \
   -p 8000:8000 \
   -e ANTHROPIC_API_KEY=your-key \
   -v "$HOME/.orbstack/run/docker.sock:/var/run/docker.sock" \
-  ghcr.io/corpai/corpai-sandbox:latest
+  public.ecr.aws/n8n3b8o3/corpai-sandbox:latest
 ```
 
-### Windows PowerShell
+### Manual Docker Run: Windows PowerShell
 
 ```powershell
 docker run --rm `
@@ -42,7 +53,7 @@ docker run --rm `
   -p 8000:8000 `
   -e ANTHROPIC_API_KEY=your-key `
   -v //./pipe/docker_engine:/var/run/docker.sock `
-  ghcr.io/corpai/corpai-sandbox:latest
+  public.ecr.aws/n8n3b8o3/corpai-sandbox:latest
 ```
 
 ## LLM Providers
@@ -96,7 +107,7 @@ docker run --rm \
   -e ANTHROPIC_API_KEY=your-key \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v corpai-sandbox-data:/var/lib/postgresql/data \
-  ghcr.io/corpai/corpai-sandbox:latest
+  public.ecr.aws/n8n3b8o3/corpai-sandbox:latest
 ```
 
 This preserves local database state, generated security keys, settings, catalog state, and deployment history.
@@ -177,10 +188,10 @@ You should see the CorpAI Sandbox container and a Kind control-plane container.
 The release image should be publicly pullable:
 
 ```bash
-docker pull ghcr.io/corpai/corpai-sandbox:latest
+docker pull public.ecr.aws/n8n3b8o3/corpai-sandbox:latest
 ```
 
-If this returns `unauthorized`, the release image is not publicly pullable yet. Ask the CorpAI team to confirm that the image is published from the public `corpai/corpai-sandbox` repository.
+If this returns `unauthorized`, ask the CorpAI team to confirm that the Amazon ECR Public image is published and available.
 
 ### Docker daemon is not running
 
